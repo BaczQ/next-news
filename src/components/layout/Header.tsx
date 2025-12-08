@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bars3Icon, XMarkIcon, UserCircleIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
-
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem, NavbarMenu, NavbarMenuItem, Input } from "@heroui/react";
+import { layoutConfig } from "@/config/layout.config";
+import { siteConfig } from "@/config/site.config";
 
 type NavItem = {
   label: string;
@@ -18,11 +19,11 @@ const primaryItems: NavItem[] = [
   { label: "Politics", href: "/politics" },
   { label: "Business", href: "/business" },
   { label: "Health", href: "/health" },
-  { label: "Entertainment", href: "/entertainment" },
-  { label: "Style", href: "/style" },
 ];
 
 const secondaryItems: NavItem[] = [
+  { label: "Entertainment", href: "/entertainment" },
+  { label: "Style", href: "/style" },
   { label: "Travel", href: "/travel" },
   { label: "Sports", href: "/sports" },
   { label: "Science", href: "/science" },
@@ -35,9 +36,23 @@ const secondaryItems: NavItem[] = [
 
 const allItems: NavItem[] = [...primaryItems, ...secondaryItems];
 
+const BRAND_BLUE = layoutConfig.brandBlue;
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  //const [isMoreOpen, setIsMoreOpen] = useState(false);
+
+  // Блокируем скролл страницы, когда открыт мобильный меню-оверлей
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isMenuOpen]);
+
   const pathname = usePathname();
   const isHome = pathname === "/";
   const isInMore = secondaryItems.some((i) => i.href === pathname);
@@ -70,13 +85,13 @@ export default function Header() {
             <NavbarBrand className="select-none">
               {isHome ? (
                 <div className="flex items-center">
-                  <span className="text-xl font-extrabold tracking-tight">BF</span>
-                  <span className="ml-1 text-xl font-semibold tracking-tight">News</span>
+                  <span className="text-xl font-extrabold tracking-tight">{siteConfig.logoFirstPart}</span>
+                  <span className="ml-1 text-xl font-semibold tracking-tight">{siteConfig.logoSecondPart}</span>
                 </div>
               ) : (
                 <NextLink href="/" className="flex items-center text-black hover:opacity-80">
-                  <span className="text-xl font-extrabold tracking-tight">BF</span>
-                  <span className="ml-1 text-xl font-semibold tracking-tight">News</span>
+                  <span className="text-xl font-extrabold tracking-tight">{siteConfig.logoFirstPart}</span>
+                  <span className="ml-1 text-xl font-semibold tracking-tight">{siteConfig.logoSecondPart}</span>
                 </NextLink>
               )}
             </NavbarBrand>
@@ -90,8 +105,8 @@ export default function Header() {
                   href={item.href}
                   className={
                     pathname === item.href
-                      ? "font-semibold text-sm text-black bg-gray-100 whitespace-nowrap px-3 py-1 rounded-full"
-                      : "font-semibold text-sm text-black/80 whitespace-nowrap transition-colors px-3 py-1 rounded-full hover:bg-gray-100 hover:text-black"
+                      ? "font-semibold text-sm text-black bg-gray-200 whitespace-nowrap px-3 py-1 rounded-full"
+                      : "font-semibold text-sm text-black/80 whitespace-nowrap transition-colors px-3 py-1 rounded-full hover:bg-gray-200 hover:text-black"
                   }
                 >
                   {item.label}
@@ -106,8 +121,8 @@ export default function Header() {
                   type="button"
                   className={
                     isInMore
-                      ? "font-semibold text-black px-2 py-1 rounded-full bg-gray-100"
-                      : "font-semibold text-black/80 hover:bg-gray-100 hover:text-black px-2 py-1 rounded-full "
+                      ? "font-semibold text-black px-2 py-1 rounded-full bg-gray-200"
+                      : "font-semibold text-black/80 hover:bg-gray-200 hover:text-black px-2 py-1 rounded-full "
                   }
                 >
                   More ▾
@@ -130,8 +145,8 @@ export default function Header() {
                       href={item.href}
                       className={
                         pathname === item.href
-                          ? "block px-3 py-1 text-sm font-semibold text-black bg-gray-100 rounded-full"
-                          : "block px-3 py-1 text-sm font-medium text-black/80 hover:text-black hover:font-semibold hover:bg-gray-100 rounded-full transition-colors"
+                          ? "block px-3 py-1 text-sm font-semibold text-black bg-gray-200 rounded-full"
+                          : "block px-3 py-1 text-sm font-medium text-black/80 hover:text-black hover:font-semibold hover:bg-gray-200 rounded-full transition-colors"
                       }
                     >
                       {item.label}
@@ -148,7 +163,7 @@ export default function Header() {
             <NavbarItem>
               <button
                 type="button"
-                className="flex items-center justify-center rounded-full border border-gray-300 p-1.5 hover:bg-gray-100 hover:bg-gray-100 transition-colors"
+                className="flex items-center justify-center rounded-full border border-gray-300 p-1.5 hover:bg-gray-200 hover:bg-gray-200 transition-colors"
                 aria-label="Open search"
                 onClick={() => {
                   console.log("open search modal");
@@ -162,7 +177,7 @@ export default function Header() {
             <NavbarItem>
               <NextLink
                 href="/login"
-                className="flex items-center justify-center rounded-full border border-gray-300 p-1.5 hover:bg-gray-100 transition-colors"
+                className="flex items-center justify-center rounded-full border border-gray-300 p-1.5 hover:bg-gray-200 transition-colors"
                 aria-label="Log in"
               >
                 <UserCircleIcon className="w-6 h-6" />
@@ -179,8 +194,8 @@ export default function Header() {
             </NavbarItem>
           </NavbarContent>
 
-          {/* Мобильное полноэкранное меню */}
-          <NavbarMenu className="pt-0">
+          {/* Мобильное полноэкранное меню как оверлей под хедером */}
+          <NavbarMenu className="pt-0 fixed inset-x-0 top-[60px] bottom-0 z-40 bg-background overflow-y-auto">
             {/* Верхняя строка с поиском */}
             <div className="sticky top-0 z-10 bg-background border-b px-4 pb-3 pt-4 flex flex-col gap-3">
               <Input
@@ -189,27 +204,22 @@ export default function Header() {
                 aria-label="Search BF News"
                 placeholder="Search BF News..."
                 classNames={{
-                  inputWrapper: "border border-default-200 rounded-none shadow-none",
+                  inputWrapper:
+                    "border border-default-200 rounded-none shadow-none focus-within:border-[var(--brand-blue)] focus-within:outline-none data-[hover=true]:bg-transparent",
+                  input: "focus:outline-none focus-visible:outline-none",
                 }}
+                style={{ ["--brand-blue" as string]: BRAND_BLUE }}
               />
-              <div className="flex justify-between items-center text-sm">
-                <NextLink href="/listen" className="font-medium text-black hover:text-black/70">
-                  Listen
-                </NextLink>
-                <NextLink href="/watch" className="font-medium text-black hover:text-black/70">
-                  Watch
-                </NextLink>
-              </div>
             </div>
 
             {/* Разделы */}
-            <div className="px-4 py-3 flex flex-col gap-1">
+            <div className="px-4 py-3 flex flex-col gap-1 pb-40">
               <div className="mt-1 mb-2 text-xs font-semibold uppercase text-foreground/60">Edition</div>
               {allItems.map((item) => (
                 <NavbarMenuItem key={item.href}>
                   <NextLink
                     href={item.href}
-                    className="block w-full py-1.5 text-base text-black hover:bg-gray-100"
+                    className="block w-full py-1.5 text-base text-foreground hover:bg-default-100 hover:underline underline-offset-4 decoration-2"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {item.label}

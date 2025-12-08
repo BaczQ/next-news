@@ -3,10 +3,11 @@ import { HeroUIProvider } from "@heroui/react";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { siteConfig } from "@/config/site.config";
 
 export const metadata: Metadata = {
-  title: "BF News",
-  description: "News engine on Next.js + Prisma",
+  title: siteConfig.seoTitle,
+  description: siteConfig.seoDescription,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

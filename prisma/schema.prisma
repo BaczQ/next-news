@@ -78,6 +78,15 @@ model Category {
   name String
   slug String @unique
 
+  shortDescription String?
+  longDescription  String?
+  seoTitle         String?
+  seoDescription   String?
+  isActive         Boolean  @default(true)
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
   posts Post[]
 }
 
@@ -140,17 +149,15 @@ model PostTag {
  */
 
 model Media {
-  id       Int     @id @default(autoincrement())
-  url      String // /uploads/2025/12/file.jpg
-  alt      String?
-  caption  String? @db.Text
-  mimeType String?
-  width    Int?
-  height   Int?
-
+  id           Int      @id @default(autoincrement())
+  url          String // /uploads/2025/12/file.jpg
+  alt          String?
+  caption      String?  @db.Text
+  mimeType     String?
+  width        Int?
+  height       Int?
   uploadedById String?
-  uploadedBy   User?   @relation(fields: [uploadedById], references: [id])
-
-  createdAt DateTime @default(now())
-  posts     Post[]
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+  posts        Post[]
 }
