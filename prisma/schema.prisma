@@ -1,0 +1,156 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+/**
+ * NextAuth user + роли
+ */
+
+enum Role {
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(ADMIN)
+
+  accounts Account[]
+  sessions Session[]
+  posts    Post[]    @relation("AuthorPosts")
+  media    Media[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+/**
+ * Контент: категории, теги, посты
+ */
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String
+  slug String @unique
+
+  posts Post[]
+}
+
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String
+  slug String @unique
+
+  posts PostTag[]
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Post {
+  id      Int        @id @default(autoincrement())
+  title   String
+  slug    String     @unique
+  status  PostStatus @default(DRAFT)
+  excerpt String?    @db.Text
+  content String     @db.LongText // HTML/JSON от редактора
+
+  metaTitle       String?
+  metaDescription String? @db.VarChar(512)
+
+  coverImageId Int?
+  coverImage   Media? @relation(fields: [coverImageId], references: [id])
+
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  authorId String
+  author   User   @relation("AuthorPosts", fields: [authorId], references: [id])
+
+  tags PostTag[]
+
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+/**
+ * Связка постов и тегов
+ */
+
+model PostTag {
+  postId Int
+  tagId  Int
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+}
+
+/**
+ * Медиа: картинки для обложек и в тексте
+ */
+
+model Media {
+  id       Int     @id @default(autoincrement())
+  url      String // /uploads/2025/12/file.jpg
+  alt      String?
+  caption  String? @db.Text
+  mimeType String?
+  width    Int?
+  height   Int?
+
+  uploadedById String?
+  uploadedBy   User?   @relation(fields: [uploadedById], references: [id])
+
+  createdAt DateTime @default(now())
+  posts     Post[]
+}
