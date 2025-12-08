@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { HeroUIProvider } from "@heroui/react";
 import "./globals.css";
+
+//import { HeroUIProvider } from "@heroui/react";
+
 import Header from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { siteConfig } from "@/config/site.config";
@@ -14,7 +16,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="ru">
       <body className="bg-background text-foreground">
-        <HeroUIProvider>
+        
           <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-1">
@@ -22,7 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </main>
             <Footer />
           </div>
-        </HeroUIProvider>
+        
       </body>
     </html>
   );
