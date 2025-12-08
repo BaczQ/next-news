@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bars3Icon, XMarkIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon, UserCircleIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 import {
   Navbar,
@@ -10,7 +10,6 @@ import {
   NavbarItem,
   NavbarMenu,
   NavbarMenuItem,
-  NavbarMenuToggle,
   Link,
   Button,
   Dropdown,
@@ -67,11 +66,14 @@ export default function Header() {
           {/* Левая часть: бургер + логотип */}
           <NavbarContent justify="start" className="gap-2">
             {/* Бургер только до 768px */}
-            <NavbarMenuToggle
-              className="md:hidden"
+            <button
+              type="button"
+              className="md:hidden flex items-center justify-center p-2 rounded-lg hover:bg-default-100 focus:outline-none"
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-              icon={isMenuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
-            />
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+            >
+              {isMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+            </button>
 
             <NavbarBrand className="cursor-pointer select-none">
               <span className="text-xl font-extrabold tracking-tight">BF</span>
@@ -110,11 +112,21 @@ export default function Header() {
 
           {/* Правая часть: Watch / Log in */}
           <NavbarContent justify="end" className="hidden md:flex gap-3">
+            {/* Кнопка поиска */}
             <NavbarItem>
-              <Link href="/watch" className="text-sm font-medium">
-                Watch
-              </Link>
+              <button
+                type="button"
+                className="p-2 rounded-lg hover:bg-default-100 flex items-center justify-center"
+                aria-label="Open search"
+                onClick={() => {
+                  // сюда потом повесим открытие модалки поиска
+                  console.log("open search modal");
+                }}
+              >
+                <MagnifyingGlassIcon className="w-5 h-5" />
+              </button>
             </NavbarItem>
+
             <NavbarItem>
               <Button as={Link} href="/login" size="sm" variant="bordered" className="text-xs font-medium">
                 <UserCircleIcon className="w-6 h-6" />
