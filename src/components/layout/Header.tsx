@@ -13,15 +13,12 @@ type NavItem = {
   href: string;
 };
 
-const primaryItems: NavItem[] = [
+const allItems: NavItem[] = [
   { label: "US", href: "/us" },
   { label: "World", href: "/world" },
   { label: "Politics", href: "/politics" },
   { label: "Business", href: "/business" },
   { label: "Health", href: "/health" },
-];
-
-const secondaryItems: NavItem[] = [
   { label: "Entertainment", href: "/entertainment" },
   { label: "Style", href: "/style" },
   { label: "Travel", href: "/travel" },
@@ -34,7 +31,10 @@ const secondaryItems: NavItem[] = [
   { label: "Games", href: "/games" },
 ];
 
-const allItems: NavItem[] = [...primaryItems, ...secondaryItems];
+const viewItemsCount = siteConfig.viewItemsCount ?? 7;
+
+const primaryItems: NavItem[] = allItems.slice(0, viewItemsCount);
+const secondaryItems: NavItem[] = allItems.slice(viewItemsCount);
 
 const BRAND_BLUE = layoutConfig.brandBlue;
 

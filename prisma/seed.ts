@@ -1,27 +1,6 @@
 // prisma/seed.ts
-import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is not set");
-}
-
-// Парсим mysql://user:pass@host:3306/dbname
-const url = new URL(databaseUrl);
-
-const adapter = new PrismaMariaDb({
-  host: url.hostname,
-  port: parseInt(url.port || "3306", 10),
-  user: decodeURIComponent(url.username),
-  password: decodeURIComponent(url.password),
-  database: url.pathname.slice(1),
-  connectionLimit: 5,
-});
-
-const prisma = new PrismaClient({ adapter });
+import { prisma } from "../src/lib/prisma"; // если папка src есть именно так
 
 const categories = [
   { name: "US", slug: "us", shortDescription: "US news" },
@@ -42,20 +21,22 @@ const categories = [
 ];
 
 async function main() {
-  for (const c of categories) {
+  for (let i = 0; i < categories.length; i++) {
+    const c = categories[i];
+
     await prisma.category.upsert({
       where: { slug: c.slug },
       update: {
         name: c.name,
         shortDescription: c.shortDescription,
-        sortOrder: 1,
+        sortOrder: i,
         isActive: true,
       },
       create: {
         name: c.name,
         slug: c.slug,
         shortDescription: c.shortDescription,
-        sortOrder: 1,
+        sortOrder: i,
         isActive: true,
       },
     });
