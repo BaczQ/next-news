@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { Bars3Icon, XMarkIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+
 import {
   Navbar,
   NavbarBrand,
@@ -16,7 +19,6 @@ import {
   DropdownItem,
   Input,
 } from "@heroui/react";
-import { useState } from "react";
 
 type NavItem = {
   label: string;
@@ -44,7 +46,6 @@ const secondaryItems: NavItem[] = [
   { label: "Games", href: "/games" },
 ];
 
-// для мобильного меню просто сводим всё в один список
 const allItems: NavItem[] = [...primaryItems, ...secondaryItems];
 
 export default function Header() {
@@ -66,7 +67,11 @@ export default function Header() {
           {/* Левая часть: бургер + логотип */}
           <NavbarContent justify="start" className="gap-2">
             {/* Бургер только до 768px */}
-            <NavbarMenuToggle aria-label={isMenuOpen ? "Close menu" : "Open menu"} className="md:hidden" />
+            <NavbarMenuToggle
+              className="md:hidden"
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              icon={isMenuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
+            />
 
             <NavbarBrand className="cursor-pointer select-none">
               <span className="text-xl font-extrabold tracking-tight">BF</span>
@@ -103,7 +108,7 @@ export default function Header() {
             </NavbarItem>
           </NavbarContent>
 
-          {/* Правая часть: Watch / Log in и т.п. можно потом допилить */}
+          {/* Правая часть: Watch / Log in */}
           <NavbarContent justify="end" className="hidden md:flex gap-3">
             <NavbarItem>
               <Link href="/watch" className="text-sm font-medium">
@@ -112,16 +117,16 @@ export default function Header() {
             </NavbarItem>
             <NavbarItem>
               <Button as={Link} href="/login" size="sm" variant="bordered" className="text-xs font-medium">
-                Log in
+                <UserCircleIcon className="w-6 h-6" />
               </Button>
             </NavbarItem>
           </NavbarContent>
 
-          {/* На мобильном справа оставим логин текстом */}
+          {/* На мобильном справа иконка юзера */}
           <NavbarContent justify="end" className="md:hidden">
             <NavbarItem>
-              <Link href="/login" className="text-sm">
-                Log in
+              <Link href="/login">
+                <UserCircleIcon className="w-7 h-7" />
               </Link>
             </NavbarItem>
           </NavbarContent>
