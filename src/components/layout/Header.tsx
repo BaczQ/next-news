@@ -13,33 +13,60 @@ type NavItem = {
   href: string;
 };
 
-const allItems: NavItem[] = [
-  { label: "US", href: "/us" },
-  { label: "World", href: "/world" },
-  { label: "Politics", href: "/politics" },
-  { label: "Business", href: "/business" },
-  { label: "Health", href: "/health" },
-  { label: "Entertainment", href: "/entertainment" },
-  { label: "Style", href: "/style" },
-  { label: "Travel", href: "/travel" },
-  { label: "Sports", href: "/sports" },
-  { label: "Science", href: "/science" },
-  { label: "Climate", href: "/climate" },
-  { label: "Weather", href: "/weather" },
-  { label: "Ukraine-Russia War", href: "/ukraine-russia-war" },
-  { label: "Israel-Hamas War", href: "/israel-hamas-war" },
-  { label: "Games", href: "/games" },
-];
+type CategoryDto = {
+  id: number;
+  name: string;
+  slug: string;
+};
 
-const viewItemsCount = siteConfig.viewItemsCount ?? 7;
-
-const primaryItems: NavItem[] = allItems.slice(0, viewItemsCount);
-const secondaryItems: NavItem[] = allItems.slice(viewItemsCount);
+// Fallback на случай, если API упадёт или пока не настроена БД
+const fallbackItems: NavItem[] = [{ label: "Games", href: "/games" }];
 
 const BRAND_BLUE = layoutConfig.brandBlue;
 
 export default function Header() {
+  const [items, setItems] = useState<NavItem[]>(fallbackItems);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const pathname = usePathname();
+  const viewItemsCount = siteConfig.viewItemsCount ?? 7;
+
+  // грузим категории из БД
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCategories() {
+      try {
+        const res = await fetch("/api/categories");
+        if (!res.ok) throw new Error("Failed to fetch categories");
+
+        const data: { categories: CategoryDto[] } = await res.json();
+
+        const navItems: NavItem[] = data.categories.map((c) => ({
+          label: c.name,
+          href: `/${c.slug}`,
+        }));
+
+        if (!cancelled && navItems.length > 0) {
+          setItems(navItems);
+        }
+      } catch (error) {
+        console.error("Failed to load categories, using fallback:", error);
+        // если ошибка – просто остаёмся на fallbackItems
+      }
+    }
+
+    loadCategories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const primaryItems = items.slice(0, viewItemsCount);
+  const secondaryItems = items.slice(viewItemsCount);
+  const isHome = pathname === "/";
+  const isInMore = secondaryItems.some((i) => i.href === pathname);
 
   // Блокируем скролл страницы, когда открыт мобильный меню-оверлей
   useEffect(() => {
@@ -52,10 +79,6 @@ export default function Header() {
       document.body.style.overflow = prevOverflow;
     };
   }, [isMenuOpen]);
-
-  const pathname = usePathname();
-  const isHome = pathname === "/";
-  const isInMore = secondaryItems.some((i) => i.href === pathname);
 
   return (
     <header className="w-full border-b bg-white text-black">
@@ -115,46 +138,48 @@ export default function Header() {
             ))}
 
             {/* More: свой дропдаун без HeroUI */}
-            <NavbarItem>
-              <div className="relative group">
-                <button
-                  type="button"
-                  className={
-                    isInMore
-                      ? "font-semibold text-black px-2 py-1 rounded-full bg-gray-200"
-                      : "font-semibold text-black/80 hover:bg-gray-200 hover:text-black px-2 py-1 rounded-full "
-                  }
-                >
-                  More ▾
-                </button>
+            {secondaryItems.length > 0 && (
+              <NavbarItem>
+                <div className="relative group">
+                  <button
+                    type="button"
+                    className={
+                      isInMore
+                        ? "font-semibold text-black px-2 py-1 rounded-full bg-gray-200"
+                        : "font-semibold text-black/80 hover:bg-gray-200 hover:text-black px-2 py-1 rounded-full "
+                    }
+                  >
+                    More ▾
+                  </button>
 
-                <div
-                  className="
-          pointer-events-auto
-          invisible opacity-0
-          group-hover:visible group-hover:opacity-100
-          transition-opacity
-          absolute left-0 top-full mt-0
-          min-w-[190px]
-          rounded-md border border-gray-200 bg-white shadow-lg z-50 py-1
-        "
-                >
-                  {secondaryItems.map((item) => (
-                    <NextLink
-                      key={item.href}
-                      href={item.href}
-                      className={
-                        pathname === item.href
-                          ? "block px-3 py-1 text-sm font-semibold text-black bg-gray-200 rounded-full"
-                          : "block px-3 py-1 text-sm font-medium text-black/80 hover:text-black hover:font-semibold hover:bg-gray-200 rounded-full transition-colors"
-                      }
-                    >
-                      {item.label}
-                    </NextLink>
-                  ))}
+                  <div
+                    className="
+                      pointer-events-auto
+                      invisible opacity-0
+                      group-hover:visible group-hover:opacity-100
+                      transition-opacity
+                      absolute left-0 top-full mt-0
+                      min-w-[190px]
+                      rounded-md border border-gray-200 bg-white shadow-lg z-50 py-1
+                    "
+                  >
+                    {secondaryItems.map((item) => (
+                      <NextLink
+                        key={item.href}
+                        href={item.href}
+                        className={
+                          pathname === item.href
+                            ? "block px-3 py-1 text-sm font-semibold text-black bg-gray-200 rounded-full"
+                            : "block px-3 py-1 text-sm font-medium text-black/80 hover:text-black hover:font-semibold hover:bg-gray-200 rounded-full transition-colors"
+                        }
+                      >
+                        {item.label}
+                      </NextLink>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </NavbarItem>
+              </NavbarItem>
+            )}
           </NavbarContent>
 
           {/* Правая часть: поиск + логин */}
@@ -215,7 +240,7 @@ export default function Header() {
             {/* Разделы */}
             <div className="px-4 py-3 flex flex-col gap-1 pb-40">
               <div className="mt-1 mb-2 text-xs font-semibold uppercase text-foreground/60">Edition</div>
-              {allItems.map((item) => (
+              {items.map((item) => (
                 <NavbarMenuItem key={item.href}>
                   <NextLink
                     href={item.href}
