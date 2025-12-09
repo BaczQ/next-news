@@ -1,31 +1,65 @@
-// src/auth.ts
+// src/lib/auth.ts
 import NextAuth from "next-auth";
-import GitHub from "next-auth/providers/github";
+import Credentials from "next-auth/providers/credentials";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 import type { NextAuthConfig } from "next-auth";
 
 export const authConfig: NextAuthConfig = {
   session: {
-    strategy: "database", // сессии через таблицу Session из твоей схемы
+    strategy: "jwt", // ✅ без базы, чисто JWT
   },
   providers: [
-    // GitHub OAuth, env-переменные будут подхватываться автоматически:
-    // AUTH_GITHUB_ID и AUTH_GITHUB_SECRET
-    GitHub,
+    Credentials({
+      name: "Email and Password",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials.password) {
+          return null;
+        }
+
+        // Ищем пользователя по email
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (!user) return null;
+
+        // Проверяем пароль
+        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+
+        if (!isValid) return null;
+
+        // Что вернём — то пойдёт в user в jwt callback
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        };
+      },
+    }),
   ],
   callbacks: {
-    async session({ session, user }) {
+    async jwt({ token, user }) {
+      // При первом логине user есть, дальше – только token
+      if (user) {
+        (token as any).id = (user as any).id;
+        (token as any).role = (user as any).role;
+      }
+      return token;
+    },
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
-        session.user.role = user.role; // тип role уже есть у AdapterUser
+        (session.user as any).id = (token as any).id;
+        (session.user as any).role = (token as any).role;
       }
       return session;
     },
   },
 };
 
-export const {
-  handlers, // { GET, POST } для /api/auth/[...nextauth]
-  auth, // auth() – проверка сессии на сервере (Page, Route, Middleware и т.д.)
-  signIn,
-  signOut,
-} = NextAuth(authConfig);
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);

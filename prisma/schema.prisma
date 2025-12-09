@@ -20,6 +20,7 @@ model User {
   id            String    @id @default(cuid()) // Уникальный ID пользователя
   name          String? // Имя пользователя
   email         String?   @unique // Email, уникальный
+  passwordHash  String // Хэш пароля пользователя
   emailVerified DateTime? // Дата подтверждения email
   image         String? // Аватар пользователя
   role          Role      @default(ADMIN) // Роль (по умолчанию ADMIN)
