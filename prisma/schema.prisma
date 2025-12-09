@@ -1,11 +1,11 @@
 // prisma/schema.prisma
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js" // Генератор клиента Prisma для работы с БД
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "mysql" // Используем MySQL в качестве базы данных
 }
 
 /**
@@ -13,60 +13,60 @@ datasource db {
  */
 
 enum Role {
-  ADMIN
+  ADMIN // Администратор системы
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  role          Role      @default(ADMIN)
+  id            String    @id @default(cuid()) // Уникальный ID пользователя
+  name          String? // Имя пользователя
+  email         String?   @unique // Email, уникальный
+  emailVerified DateTime? // Дата подтверждения email
+  image         String? // Аватар пользователя
+  role          Role      @default(ADMIN) // Роль (по умолчанию ADMIN)
 
-  accounts Account[]
-  sessions Session[]
-  posts    Post[]    @relation("AuthorPosts")
-  media    Media[]
+  accounts Account[] // Аккаунты OAuth
+  sessions Session[] // Сессии NextAuth
+  posts    Post[]    @relation("AuthorPosts") // Посты, написанные пользователем
+  media    Media[] // Медиафайлы, загруженные пользователем
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) // Дата создания записи
+  updatedAt DateTime @updatedAt // Автообновляемая дата изменения
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
+  id                String  @id @default(cuid()) // Уникальный ID OAuth-аккаунта
+  userId            String // ID пользователя, которому принадлежит аккаунт
+  type              String // Тип провайдера (oauth, oidc и т.д.)
+  provider          String // Название OAuth-провайдера
+  providerAccountId String // Уникальный ID аккаунта у провайдера
+  refresh_token     String? @db.Text // Refresh token
+  access_token      String? @db.Text // Access token
+  expires_at        Int? // Срок действия токена доступа
+  token_type        String? // Тип токена
+  scope             String? // Список разрешений OAuth
+  id_token          String? @db.Text // ID-токен (OIDC)
+  session_state     String? // Состояние OAuth-сессии
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade) // Связь с User
 
-  @@unique([provider, providerAccountId])
+  @@unique([provider, providerAccountId]) // Уникальный ключ провайдера + ID аккаунта
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
+  id           String   @id @default(cuid()) // Уникальный ID сессии
+  sessionToken String   @unique // Токен текущей сессии
+  userId       String // Пользователь, которому принадлежит сессия
+  expires      DateTime // Когда сессия станет недействительной
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade) // Связь с User
 }
 
 model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+  identifier String // Напр. email
+  token      String   @unique // Уникальный токен подтверждения
+  expires    DateTime // Срок действия токена
 
-  @@unique([identifier, token])
+  @@unique([identifier, token]) // Уникальная пара для поиска
 }
 
 /**
@@ -74,60 +74,60 @@ model VerificationToken {
  */
 
 model Category {
-  id   Int    @id @default(autoincrement())
-  name String
-  slug String @unique
+  id   Int    @id @default(autoincrement()) // Уникальный ID категории
+  name String // Название категории
+  slug String @unique // slug для URL
 
-  shortDescription String?
-  longDescription  String?
-  seoTitle         String?
-  seoDescription   String?
-  isActive         Boolean  @default(true)
-  sortOrder        Int      @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  shortDescription String? // Короткое описание
+  longDescription  String? // Длинное описание
+  seoTitle         String? // SEO-заголовок
+  seoDescription   String? // SEO-описание
+  isActive         Boolean  @default(true) // Статус активности категории
+  sortOrder        Int      @default(0) // Порядок сортировки
+  createdAt        DateTime @default(now()) // Дата создания
+  updatedAt        DateTime @updatedAt // Дата обновления
 
-  posts Post[]
+  posts Post[] // Посты категории
 }
 
 model Tag {
-  id   Int    @id @default(autoincrement())
-  name String
-  slug String @unique
+  id   Int    @id @default(autoincrement()) // Уникальный ID тега
+  name String // Название тега
+  slug String @unique // Уникальный slug
 
-  posts PostTag[]
+  posts PostTag[] // Связи между тегами и постами
 }
 
 enum PostStatus {
-  DRAFT
-  PUBLISHED
+  DRAFT // Черновик
+  PUBLISHED // Опубликовано
 }
 
 model Post {
-  id      Int        @id @default(autoincrement())
-  title   String
-  slug    String     @unique
-  status  PostStatus @default(DRAFT)
-  excerpt String?    @db.Text
-  content String     @db.LongText // HTML/JSON от редактора
+  id      Int        @id @default(autoincrement()) // Уникальный ID поста
+  title   String // Заголовок
+  slug    String     @unique // Уникальный slug
+  status  PostStatus @default(DRAFT) // Статус публикации
+  excerpt String?    @db.Text // Короткое описание (анонс)
+  content String     @db.LongText // Основной контент поста (HTML/JSON)
 
-  metaTitle       String?
-  metaDescription String? @db.VarChar(512)
+  metaTitle       String? // SEO title
+  metaDescription String? @db.VarChar(512) // SEO description
 
-  coverImageId Int?
-  coverImage   Media? @relation(fields: [coverImageId], references: [id])
+  coverImageId Int? // FK на обложку поста
+  coverImage   Media? @relation(fields: [coverImageId], references: [id]) // Обложка
 
-  categoryId Int?
-  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId Int? // FK категории
+  category   Category? @relation(fields: [categoryId], references: [id]) // Связь с Category
 
-  authorId String
-  author   User   @relation("AuthorPosts", fields: [authorId], references: [id])
+  authorId String // FK автора
+  author   User   @relation("AuthorPosts", fields: [authorId], references: [id]) // Автор поста
 
-  tags PostTag[]
+  tags PostTag[] // Теги поста
 
-  publishedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime? // Дата публикации
+  createdAt   DateTime  @default(now()) // Дата создания
+  updatedAt   DateTime  @updatedAt // Дата обновления
 }
 
 /**
@@ -135,13 +135,13 @@ model Post {
  */
 
 model PostTag {
-  postId Int
-  tagId  Int
+  postId Int // FK на пост
+  tagId  Int // FK на тег
 
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade) // Связь с Post
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade) // Связь с Tag
 
-  @@id([postId, tagId])
+  @@id([postId, tagId]) // Составной первичный ключ
 }
 
 /**
@@ -149,15 +149,15 @@ model PostTag {
  */
 
 model Media {
-  id           Int      @id @default(autoincrement())
-  url          String // /uploads/2025/12/file.jpg
-  alt          String?
-  caption      String?  @db.Text
-  mimeType     String?
-  width        Int?
-  height       Int?
-  uploadedById String?
-  uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
-  createdAt    DateTime @default(now())
-  posts        Post[]
+  id           Int      @id @default(autoincrement()) // Уникальный ID медиафайла
+  url          String // Путь к файлу, напр. /uploads/2025/12/image.jpg
+  alt          String? // ALT-текст для SEO
+  caption      String?  @db.Text // Подпись картинки
+  mimeType     String? // MIME-тип (image/jpeg и т.п.)
+  width        Int? // Ширина изображения
+  height       Int? // Высота изображения
+  uploadedById String? // FK пользователя, загрузившего файл
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id]) // Кто загрузил
+  createdAt    DateTime @default(now()) // Дата загрузки
+  posts        Post[] // Посты, где используется медиа
 }

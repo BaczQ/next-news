@@ -13,55 +13,17 @@ type NavItem = {
   href: string;
 };
 
-type CategoryDto = {
-  id: number;
-  name: string;
-  slug: string;
+type HeaderClientProps = {
+  items: NavItem[];
 };
-
-// Fallback на случай, если API упадёт или пока не настроена БД
-const fallbackItems: NavItem[] = [{ label: "Games", href: "/games" }];
 
 const BRAND_BLUE = layoutConfig.brandBlue;
 
-export default function Header() {
-  const [items, setItems] = useState<NavItem[]>(fallbackItems);
+export default function HeaderClient({ items }: HeaderClientProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const pathname = usePathname();
   const viewItemsCount = siteConfig.viewItemsCount ?? 7;
-
-  // грузим категории из БД
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadCategories() {
-      try {
-        const res = await fetch("/api/categories");
-        if (!res.ok) throw new Error("Failed to fetch categories");
-
-        const data: { categories: CategoryDto[] } = await res.json();
-
-        const navItems: NavItem[] = data.categories.map((c) => ({
-          label: c.name,
-          href: `/${c.slug}`,
-        }));
-
-        if (!cancelled && navItems.length > 0) {
-          setItems(navItems);
-        }
-      } catch (error) {
-        console.error("Failed to load categories, using fallback:", error);
-        // если ошибка – просто остаёмся на fallbackItems
-      }
-    }
-
-    loadCategories();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const primaryItems = items.slice(0, viewItemsCount);
   const secondaryItems = items.slice(viewItemsCount);
@@ -137,7 +99,7 @@ export default function Header() {
               </NavbarItem>
             ))}
 
-            {/* More: свой дропдаун без HeroUI */}
+            {/* More */}
             {secondaryItems.length > 0 && (
               <NavbarItem>
                 <div className="relative group">
@@ -184,11 +146,10 @@ export default function Header() {
 
           {/* Правая часть: поиск + логин */}
           <NavbarContent justify="end" className="hidden md:flex gap-3">
-            {/* Кнопка поиска */}
             <NavbarItem>
               <button
                 type="button"
-                className="flex items-center justify-center rounded-full border border-gray-300 p-1.5 hover:bg-gray-200 hover:bg-gray-200 transition-colors"
+                className="flex items-center justify-center rounded-full border border-gray-300 p-1.5 hover:bg-gray-200 transition-colors"
                 aria-label="Open search"
                 onClick={() => {
                   console.log("open search modal");
@@ -198,7 +159,6 @@ export default function Header() {
               </button>
             </NavbarItem>
 
-            {/* Логин без HeroUI Button */}
             <NavbarItem>
               <NextLink
                 href="/login"
